@@ -1,0 +1,342 @@
+:root {
+  color-scheme: light;
+  font-family: 'UD Digi Kyokasho NP-B', 'UD Digi Kyokasho N-R', 'Hiragino Mincho ProN', 'MS Mincho', serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #3d3d3d;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #fdf6e3;
+  background-image: radial-gradient(circle, #ddd8c0 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+button, input, select { font: inherit; }
+button { border: none; cursor: pointer; }
+#root { min-height: 100vh; }
+h1, h2, h3, p { margin-top: 0; }
+
+/* ── レイアウト ── */
+
+.app-shell {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── ヒーローカード ── */
+
+.hero-card {
+  background: #fff8f0;
+  border-radius: 28px;
+  padding: 24px 24px 20px;
+}
+
+.hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.hero-top h1 {
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
+  color: #2d2d2d;
+  letter-spacing: 0.05em;
+  margin: 0;
+  line-height: 1;
+}
+
+.hero-bookshelf {
+  height: clamp(2.2rem, 5vw, 3.2rem);
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* ── スタット（横並び） ── */
+
+.hero-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.hero-stat-card {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.hero-stat-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 12px;
+}
+
+.hero-stat-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+}
+
+.hero-stats strong {
+  font-size: 1.8rem;
+  line-height: 1;
+  color: #2d2d2d;
+}
+
+.hero-stats span {
+  font-family: 'UD Digi Kyokasho NP-B', 'UD Digi Kyokasho N-R', 'Hiragino Mincho ProN', serif;
+  font-size: 0.65rem;
+  color: #777;
+  margin-top: 4px;
+}
+
+/* ── タブナビ ── */
+
+.tab-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.5);
+  color: #aaa;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tab-btn.active {
+  background: #fff8f0;
+  color: #3d3d3d;
+}
+
+/* ── パネル ── */
+
+.panel {
+  background: #fff8f0;
+  border-radius: 24px;
+  padding: 24px;
+}
+
+/* ── スキャンオプション ── */
+
+.scan-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.scan-options label {
+  font-size: 0.95rem;
+  font-weight: bold;
+  color: #555;
+}
+
+.scan-options small {
+  color: #aaa;
+  font-size: 0.8rem;
+}
+
+.count-input {
+  padding: 10px 14px;
+  border: 2px solid #c8c0b4;
+  border-radius: 14px;
+  background: #fef9c3;
+  color: #3d3d3d;
+  width: fit-content;
+}
+
+.count-input:focus {
+  outline: none;
+  border-color: #f9a8c9;
+}
+
+/* ── アップロードボックス ── */
+
+.upload-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  border: 2px dashed #f9a8c9;
+  border-radius: 20px;
+  background: #fff5f9;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 16px;
+  cursor: pointer;
+  color: #f9a8c9;
+  font-weight: bold;
+  font-size: 1.05rem;
+  transition: background 0.2s;
+}
+
+.upload-box:hover { background: #ffe4f0; }
+.upload-box input { display: none; }
+
+/* ── プレビュー ── */
+
+.preview {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  border-radius: 18px;
+  margin-bottom: 16px;
+}
+
+/* ── ステータスメッセージ ── */
+
+.status { color: #93c5fd; font-weight: bold; }
+.error { color: #f87171; font-weight: bold; }
+.empty { color: #b0b0b0; }
+
+/* ── カードリスト ── */
+
+.results-list,
+.library-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.result-card,
+.library-card {
+  border-radius: 18px;
+  padding: 14px;
+  background: #fffdf8;
+}
+
+.result-main,
+.library-main {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.result-main img,
+.library-main img {
+  width: 52px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.thumb-placeholder {
+  width: 52px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #fef9c3;
+  color: #aaa;
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+.result-main h3, .library-main h3 { font-size: 1rem; margin-bottom: 4px; }
+.result-main p, .library-main p { font-size: 0.85rem; color: #777; margin-bottom: 4px; }
+.result-main small { font-size: 0.75rem; color: #bbb; }
+
+/* ── ボタン ── */
+
+.result-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.result-actions button,
+.library-actions button {
+  padding: 9px 16px;
+  border: 2px solid #c8c0b4;
+  border-radius: 999px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  transition: filter 0.15s;
+}
+
+.result-actions button:hover,
+.library-actions button:hover { filter: brightness(0.95); }
+
+.result-actions button:first-child {
+  background: #bbf7d0;
+  color: #3d3d3d;
+  width: 100%;
+}
+
+.result-actions .secondary {
+  background: #f0ede8;
+  color: #777;
+  width: 100%;
+}
+
+.library-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.library-actions select {
+  flex: 1;
+  padding: 9px 14px;
+  border: 2px solid #c8c0b4;
+  border-radius: 999px;
+  background: #fef9c3;
+  color: #3d3d3d;
+  font-weight: bold;
+  appearance: none;
+  cursor: pointer;
+}
+
+.library-actions select:focus {
+  outline: none;
+  border-color: #a0a0cc;
+}
+
+.library-actions .ghost {
+  flex: 0 0 auto;
+  width: auto;
+  background: #fecaca;
+  color: #3d3d3d;
+  border-color: #c8c0b4;
+}
+
+/* ── レスポンシブ ── */
+
+@media (max-width: 600px) {
+  .app-shell { padding: 14px; }
+  .hero-bookshelf { height: 64px; }
+}
