@@ -29,6 +29,11 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(uploadDir));
 
+const distDir = path.join(__dirname, 'dist');
+if (fs.existsSync(distDir)) {
+  app.use(express.static(distDir));
+}
+
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
 const parseBookCandidates = (content) => {
@@ -293,6 +298,12 @@ app.post('/api/scan', upload.single('image'), async (req, res, next) => {
     }
   }
 });
+
+if (fs.existsSync(distDir)) {
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(distDir, 'index.html'));
+  });
+}
 
 app.use((error, _req, res, _next) => {
   if (error instanceof multer.MulterError) {

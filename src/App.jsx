@@ -164,7 +164,7 @@ function App() {
             </div>
 
             <label className="upload-box">
-              <input type="file" accept="image/*" capture="environment" onChange={handleFileChange} />
+              <input type="file" accept="image/*" onChange={handleFileChange} />
               <span>{image ? '別の写真に切り替える' : '写真を選択してスキャン'}</span>
             </label>
 
