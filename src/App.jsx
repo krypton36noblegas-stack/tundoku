@@ -159,7 +159,7 @@ function App() {
 
   const readBooks = library.filter((b) => b.status === '読了');
 
-  const BookCard = ({ book, extraClass = '', actions }) => (
+  const BookCard = ({ book, extraClass = '', actions, memoButton = null }) => (
     <div className="card-wrapper">
       <div className="delete-zone" onClick={() => deleteBook(book.id)}>削除</div>
       <article
@@ -168,10 +168,13 @@ function App() {
         onTouchEnd={(e) => handleTouchEnd(e, book.id)}
       >
         <div className="library-info">
-          <h3
-            className={`book-title${expandedTitleId === book.id ? ' expanded' : ''}`}
-            onClick={() => setExpandedTitleId(expandedTitleId === book.id ? null : book.id)}
-          >{book.title}</h3>
+          <div className="title-row">
+            <h3
+              className={`book-title${expandedTitleId === book.id ? ' expanded' : ''}`}
+              onClick={() => setExpandedTitleId(expandedTitleId === book.id ? null : book.id)}
+            >{book.title}</h3>
+            {expandedTitleId === book.id && memoButton}
+          </div>
           <p className={expandedTitleId === book.id ? 'author-expanded' : ''}>{book.author || '著者情報なし'}</p>
         </div>
         <div className="library-actions">{actions}</div>
@@ -298,12 +301,14 @@ function App() {
                   key={book.id}
                   book={book}
                   extraClass={book.status === '読書中' ? ' reading' : ''}
-                  actions={<>
-                    <button className="read-btn" onClick={() => markAsRead(book.id)}>よんだ</button>
+                  memoButton={
                     <button
                       className={`memo-btn${book.memo ? ' has-memo' : ''}`}
                       onClick={() => setOpenMemoId(openMemoId === book.id ? null : book.id)}
                     >✏️</button>
+                  }
+                  actions={<>
+                    <button className="read-btn" onClick={() => markAsRead(book.id)}>よんだ</button>
                     <button
                       className={`star-btn${book.status === '読書中' ? ' active' : ''}`}
                       onClick={() => toggleReading(book.id)}

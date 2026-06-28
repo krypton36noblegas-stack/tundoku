@@ -307,13 +307,22 @@ h1, h2, h3, p { margin-top: 0; }
   overflow: visible;
 }
 
+.title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
 .book-title {
+  flex: 1;
   font-size: 0.95rem;
   margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
+  min-width: 0;
 }
 
 .book-title.expanded {
@@ -421,7 +430,12 @@ h1, h2, h3, p { margin-top: 0; }
 }
 
 .library-card.read {
-  opacity: 0.8;
+  background: #f0ede8;
+}
+
+.library-card.read .book-title,
+.library-card.read .library-info p {
+  color: #aaa;
 }
 
 .star-btn {
