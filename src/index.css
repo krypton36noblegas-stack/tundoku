@@ -269,7 +269,7 @@ h1, h2, h3, p { margin-top: 0; }
 .library-info {
   flex: 1;
   min-width: 0;
-  min-width: 120px;
+  overflow: hidden;
 }
 
 .library-info h3 {
