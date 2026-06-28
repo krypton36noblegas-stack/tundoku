@@ -388,6 +388,13 @@ h1, h2, h3, p { margin-top: 0; }
   border-color: #c8c0b4;
 }
 
+.back-btn {
+  flex: 0 0 auto;
+  background: #e0e7ff;
+  color: #3d3d3d;
+  border-color: #c8c0b4;
+}
+
 .scanned-label {
   font-weight: bold;
   color: #e75480;

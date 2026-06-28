@@ -107,6 +107,12 @@ function App() {
     );
   };
 
+  const moveToTundoku = (id) => {
+    setLibrary((current) =>
+      current.map((item) => (item.id === id ? { ...item, status: '積読' } : item))
+    );
+  };
+
   const removeBook = (id, title) => {
     if (!window.confirm(`「${title}」を削除しますか？`)) return;
     setLibrary((current) => current.filter((item) => item.id !== id));
@@ -170,7 +176,7 @@ function App() {
         {page === 'scan' && (
           <section className="panel">
             <div className="scan-options">
-              <label>おおよその冊数</label>
+              <label>読み取れそうな冊数</label>
               <div className="count-btns">
                 {['5', '10', '15', '20'].map((n) => (
                   <button
@@ -266,6 +272,7 @@ function App() {
                     <p>{book.author || '著者情報なし'}</p>
                   </div>
                   <div className="library-actions">
+                    <button className="back-btn" onClick={() => moveToTundoku(book.id)}>もどす</button>
                     <button className="ghost" onClick={() => removeBook(book.id, book.title)}>削除</button>
                   </div>
                 </article>
