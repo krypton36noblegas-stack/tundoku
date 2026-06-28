@@ -14,6 +14,7 @@ function App() {
   const [error, setError] = useState('');
   const [requestedCount, setRequestedCount] = useState('10');
   const [page, setPage] = useState('scan');
+  const [openMemoId, setOpenMemoId] = useState(null);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
@@ -108,6 +109,12 @@ function App() {
   const markAsRead = (id) => {
     setLibrary((current) =>
       current.map((item) => (item.id === id ? { ...item, status: '読了' } : item))
+    );
+  };
+
+  const updateMemo = (id, memo) => {
+    setLibrary((current) =>
+      current.map((item) => (item.id === id ? { ...item, memo } : item))
     );
   };
 
@@ -250,6 +257,12 @@ function App() {
                     <button className="read-btn" onClick={() => markAsRead(book.id)}>よんだ</button>
                     <button className="ghost" onClick={() => removeBook(book.id, book.title)}>削除</button>
                     <button
+                      className={`memo-btn${book.memo ? ' has-memo' : ''}`}
+                      onClick={() => setOpenMemoId(openMemoId === book.id ? null : book.id)}
+                    >
+                      ✏️
+                    </button>
+                    <button
                       className={`star-btn${book.status === '読書中' ? ' active' : ''}`}
                       onClick={() => toggleReading(book.id)}
                       title="いま読んでる"
@@ -257,6 +270,15 @@ function App() {
                       ★
                     </button>
                   </div>
+                  {openMemoId === book.id && (
+                    <textarea
+                      className="memo-area"
+                      value={book.memo || ''}
+                      onChange={(e) => updateMemo(book.id, e.target.value)}
+                      placeholder="メモを入力..."
+                      autoFocus
+                    />
+                  )}
                 </article>
               ))}
             </div>
@@ -278,7 +300,22 @@ function App() {
                   <div className="library-actions">
                     <button className="back-btn" onClick={() => moveToTundoku(book.id)}>もどす</button>
                     <button className="ghost" onClick={() => removeBook(book.id, book.title)}>削除</button>
+                    <button
+                      className={`memo-btn${book.memo ? ' has-memo' : ''}`}
+                      onClick={() => setOpenMemoId(openMemoId === book.id ? null : book.id)}
+                    >
+                      ✏️
+                    </button>
                   </div>
+                  {openMemoId === book.id && (
+                    <textarea
+                      className="memo-area"
+                      value={book.memo || ''}
+                      onChange={(e) => updateMemo(book.id, e.target.value)}
+                      placeholder="メモを入力..."
+                      autoFocus
+                    />
+                  )}
                 </article>
               ))}
             </div>

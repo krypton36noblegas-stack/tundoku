@@ -261,6 +261,7 @@ h1, h2, h3, p { margin-top: 0; }
   padding: 10px 14px;
   background: #fffdf8;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
 }
@@ -268,6 +269,7 @@ h1, h2, h3, p { margin-top: 0; }
 .library-info {
   flex: 1;
   min-width: 0;
+  min-width: 120px;
 }
 
 .library-info h3 {
@@ -394,6 +396,36 @@ h1, h2, h3, p { margin-top: 0; }
   color: #3d3d3d;
   border-color: #c8c0b4;
 }
+
+.memo-btn {
+  flex: 0 0 auto;
+  background: none;
+  border: none !important;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.4;
+  padding: 0.1rem 0.2rem;
+  transition: opacity 0.15s;
+}
+.memo-btn.has-memo { opacity: 1; }
+.memo-btn:hover { opacity: 0.8; }
+
+.memo-area {
+  width: 100%;
+  flex-basis: 100%;
+  margin-top: 0;
+  padding: 8px 10px;
+  border: 2px solid #f9a8c9;
+  border-radius: 10px;
+  background: #fff9fb;
+  font-size: 0.85rem;
+  resize: vertical;
+  min-height: 70px;
+  font-family: inherit;
+  color: #3d3d3d;
+  box-sizing: border-box;
+}
+.memo-area:focus { outline: none; border-color: #e75480; }
 
 .scanned-label {
   font-weight: bold;
