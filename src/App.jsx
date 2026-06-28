@@ -40,18 +40,23 @@ function App() {
 
   const getResultId = (result) => result.id || result.googleBookId || `${result.title}-${result.author}`;
 
-  const handleFileChange = async (event) => {
+  const handleFileChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     setImage(file);
     setResults([]);
     setError('');
     setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const handleScan = async () => {
+    if (!image) return;
+    setResults([]);
+    setError('');
     setIsScanning(true);
 
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('image', image);
     formData.append('requestedCount', String(normalizeRequestedCount(requestedCount)));
 
     try {
@@ -63,10 +68,15 @@ function App() {
         catch { data = { error: 'サーバーから無効な応答を受け取りました。' }; }
       }
       if (!response.ok) throw new Error(data.error || `スキャンに失敗しました (${response.status})`);
-      setResults((data.results || []).map((result, index) => ({
-        ...result,
-        id: getResultId(result) || `${result.title || 'book'}-${index}`,
-      })));
+      const libraryTitles = new Set(library.map((item) => item.title));
+      setResults(
+        (data.results || [])
+          .filter((result) => !libraryTitles.has(result.title))
+          .map((result, index) => ({
+            ...result,
+            id: getResultId(result) || `${result.title || 'book'}-${index}`,
+          }))
+      );
     } catch (scanError) {
       setError(scanError instanceof Error ? scanError.message : 'スキャンに失敗しました');
     } finally {
@@ -165,10 +175,13 @@ function App() {
 
             <label className="upload-box">
               <input type="file" accept="image/*" onChange={handleFileChange} />
-              <span>{image ? '別の写真に切り替える' : '写真を選択してスキャン'}</span>
+              <span>{image ? '別の写真に切り替える' : '写真を選択する'}</span>
             </label>
 
             {previewUrl ? <img className="preview" src={previewUrl} alt="アップロードした本棚" /> : null}
+            {image && !isScanning ? (
+              <button className="scan-btn" onClick={handleScan}>よみとる</button>
+            ) : null}
             {isScanning ? <p className="status">かいせきちゅう…</p> : null}
             {error ? <p className="error">{error}</p> : null}
 
