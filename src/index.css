@@ -497,6 +497,50 @@ h1, h2, h3, p { margin-top: 0; }
 }
 .memo-area:focus { outline: none; border-color: #e75480; }
 
+.edit-btn {
+  flex: 0 0 auto;
+  background: none;
+  border: none !important;
+  font-size: 0.75rem;
+  color: #bbb;
+  cursor: pointer;
+  padding: 0.1rem 0.3rem;
+  white-space: nowrap;
+}
+.edit-btn:hover { color: #888; }
+
+.edit-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  flex-basis: 100%;
+}
+
+.edit-input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 2px solid #f9a8c9;
+  border-radius: 10px;
+  background: #fff9fb;
+  font-size: 0.9rem;
+  color: #3d3d3d;
+  box-sizing: border-box;
+}
+.edit-input:focus { outline: none; border-color: #e75480; }
+
+.save-btn {
+  align-self: flex-end;
+  padding: 6px 18px;
+  background: #e75480;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
 .scanned-label {
   font-weight: bold;
   color: #e75480;

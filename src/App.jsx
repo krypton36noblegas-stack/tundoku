@@ -5,7 +5,19 @@ import { normalizeRequestedCount } from '../scanConfig.js';
 
 const STORAGE_KEY = 'tundoku-library';
 
-function BookCard({ book, extraClass = '', actions, memoButton = null, swipedId, expandedTitleId, openMemoId, onDelete, onTouchStart, onTouchEnd, onToggleTitle, onUpdateMemo }) {
+function BookCard({ book, extraClass = '', actions, memoButton = null, swipedId, expandedTitleId, openMemoId, editingId, onDelete, onTouchStart, onTouchEnd, onToggleTitle, onUpdateMemo, onStartEdit, onSaveEdit }) {
+  const [editTitle, setEditTitle] = useState(book.title);
+  const [editAuthor, setEditAuthor] = useState(book.author || '');
+  const isExpanded = expandedTitleId === book.id;
+  const isEditing = editingId === book.id;
+
+  useEffect(() => {
+    if (isEditing) {
+      setEditTitle(book.title);
+      setEditAuthor(book.author || '');
+    }
+  }, [isEditing, book.title, book.author]);
+
   return (
     <div className="card-wrapper">
       <div className="delete-zone" onClick={() => onDelete(book.id)}>削除</div>
@@ -15,17 +27,43 @@ function BookCard({ book, extraClass = '', actions, memoButton = null, swipedId,
         onTouchEnd={(e) => onTouchEnd(e, book.id)}
       >
         <div className="library-info">
-          <div className="title-row">
-            <h3
-              className={`book-title${expandedTitleId === book.id ? ' expanded' : ''}`}
-              onClick={() => onToggleTitle(book.id)}
-            >{book.title}</h3>
-            {expandedTitleId === book.id && memoButton}
-          </div>
-          <p className={expandedTitleId === book.id ? 'author-expanded' : ''}>{book.author || '著者情報なし'}</p>
+          {isEditing ? (
+            <div className="edit-fields">
+              <input
+                className="edit-input"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder="タイトル"
+                autoFocus
+              />
+              <input
+                className="edit-input"
+                value={editAuthor}
+                onChange={(e) => setEditAuthor(e.target.value)}
+                placeholder="著者名"
+              />
+              <button className="save-btn" onClick={() => onSaveEdit(book.id, editTitle, editAuthor)}>保存</button>
+            </div>
+          ) : (
+            <>
+              <div className="title-row">
+                <h3
+                  className={`book-title${isExpanded ? ' expanded' : ''}`}
+                  onClick={() => onToggleTitle(book.id)}
+                >{book.title}</h3>
+                {isExpanded && (
+                  <>
+                    {memoButton}
+                    <button className="edit-btn" onClick={() => onStartEdit(book.id)}>修正</button>
+                  </>
+                )}
+              </div>
+              <p className={isExpanded ? 'author-expanded' : ''}>{book.author || '著者情報なし'}</p>
+            </>
+          )}
         </div>
-        <div className="library-actions">{actions}</div>
-        {openMemoId === book.id && (
+        {!isEditing && <div className="library-actions">{actions}</div>}
+        {openMemoId === book.id && !isEditing && (
           <textarea
             className="memo-area"
             value={book.memo || ''}
@@ -51,6 +89,7 @@ function App() {
   const [openMemoId, setOpenMemoId] = useState(null);
   const [expandedTitleId, setExpandedTitleId] = useState(null);
   const [swipedId, setSwipedId] = useState(null);
+  const [editingId, setEditingId] = useState(null);
   const touchStartX = useRef(0);
 
   useEffect(() => {
@@ -185,10 +224,22 @@ function App() {
 
   const handleToggleTitle = useCallback((id) => {
     setExpandedTitleId((prev) => (prev === id ? null : id));
+    setEditingId(null);
   }, []);
 
   const handleToggleMemo = useCallback((id) => {
     setOpenMemoId((prev) => (prev === id ? null : id));
+  }, []);
+
+  const startEdit = useCallback((id) => {
+    setEditingId(id);
+  }, []);
+
+  const saveEdit = useCallback((id, title, author) => {
+    setLibrary((current) =>
+      current.map((item) => (item.id === id ? { ...item, title, author } : item))
+    );
+    setEditingId(null);
   }, []);
 
   const tundokuBooks = library
@@ -200,6 +251,20 @@ function App() {
     });
 
   const readBooks = library.filter((b) => b.status === '読了');
+
+  const sharedCardProps = {
+    swipedId,
+    expandedTitleId,
+    openMemoId,
+    editingId,
+    onDelete: deleteBook,
+    onTouchStart: handleTouchStart,
+    onTouchEnd: handleTouchEnd,
+    onToggleTitle: handleToggleTitle,
+    onUpdateMemo: updateMemo,
+    onStartEdit: startEdit,
+    onSaveEdit: saveEdit,
+  };
 
   return (
     <div className="app-shell">
@@ -311,14 +376,6 @@ function App() {
                   key={book.id}
                   book={book}
                   extraClass={book.status === '読書中' ? ' reading' : ''}
-                  swipedId={swipedId}
-                  expandedTitleId={expandedTitleId}
-                  openMemoId={openMemoId}
-                  onDelete={deleteBook}
-                  onTouchStart={handleTouchStart}
-                  onTouchEnd={handleTouchEnd}
-                  onToggleTitle={handleToggleTitle}
-                  onUpdateMemo={updateMemo}
                   memoButton={
                     <button
                       className={`memo-btn${book.memo ? ' has-memo' : ''}`}
@@ -332,6 +389,7 @@ function App() {
                       onClick={() => toggleReading(book.id)}
                     >★</button>
                   </>}
+                  {...sharedCardProps}
                 />
               ))}
             </div>
@@ -349,14 +407,6 @@ function App() {
                   key={book.id}
                   book={book}
                   extraClass=" read"
-                  swipedId={swipedId}
-                  expandedTitleId={expandedTitleId}
-                  openMemoId={openMemoId}
-                  onDelete={deleteBook}
-                  onTouchStart={handleTouchStart}
-                  onTouchEnd={handleTouchEnd}
-                  onToggleTitle={handleToggleTitle}
-                  onUpdateMemo={updateMemo}
                   actions={<>
                     <button className="back-btn" onClick={() => moveToTundoku(book.id)}>もどす</button>
                     <button
@@ -364,6 +414,7 @@ function App() {
                       onClick={() => handleToggleMemo(book.id)}
                     >✏️</button>
                   </>}
+                  {...sharedCardProps}
                 />
               ))}
             </div>
