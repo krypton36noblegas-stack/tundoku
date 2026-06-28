@@ -269,15 +269,29 @@ h1, h2, h3, p { margin-top: 0; }
 .library-info {
   flex: 1;
   min-width: 0;
-  min-width: 120px;
+  overflow: hidden;
 }
 
-.library-info h3 {
+.library-info:has(.expanded) {
+  overflow: visible;
+}
+
+.book-title {
   font-size: 0.95rem;
   margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.book-title.expanded {
+  white-space: normal;
+  overflow: visible;
+  background: #fff3f8;
+  border-radius: 6px;
+  padding: 2px 4px;
+  margin: -2px -4px;
 }
 
 .library-info p {
@@ -365,7 +379,7 @@ h1, h2, h3, p { margin-top: 0; }
 }
 
 .library-card.read {
-  opacity: 0.65;
+  opacity: 0.8;
 }
 
 .star-btn {

@@ -15,6 +15,7 @@ function App() {
   const [requestedCount, setRequestedCount] = useState('10');
   const [page, setPage] = useState('scan');
   const [openMemoId, setOpenMemoId] = useState(null);
+  const [expandedTitleId, setExpandedTitleId] = useState(null);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
@@ -250,7 +251,10 @@ function App() {
                   key={book.id}
                 >
                   <div className="library-info">
-                    <h3>{book.title}</h3>
+                    <h3
+                      className={`book-title${expandedTitleId === book.id ? ' expanded' : ''}`}
+                      onClick={() => setExpandedTitleId(expandedTitleId === book.id ? null : book.id)}
+                    >{book.title}</h3>
                     <p>{book.author || '著者情報なし'}</p>
                   </div>
                   <div className="library-actions">
@@ -294,7 +298,10 @@ function App() {
               {readBooks.map((book) => (
                 <article className="library-card read" key={book.id}>
                   <div className="library-info">
-                    <h3>{book.title}</h3>
+                    <h3
+                      className={`book-title${expandedTitleId === book.id ? ' expanded' : ''}`}
+                      onClick={() => setExpandedTitleId(expandedTitleId === book.id ? null : book.id)}
+                    >{book.title}</h3>
                     <p>{book.author || '著者情報なし'}</p>
                   </div>
                   <div className="library-actions">
