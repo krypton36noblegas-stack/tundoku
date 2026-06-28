@@ -169,18 +169,28 @@ h1, h2, h3, p { margin-top: 0; }
   font-size: 0.8rem;
 }
 
-.count-input {
-  padding: 10px 14px;
+.count-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.count-btn {
+  flex: 1;
+  padding: 10px 0;
   border: 2px solid #c8c0b4;
   border-radius: 14px;
   background: #fef9c3;
   color: #3d3d3d;
-  width: fit-content;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
 }
 
-.count-input:focus {
-  outline: none;
-  border-color: #f9a8c9;
+.count-btn.active {
+  background: #e75480;
+  border-color: #e75480;
+  color: #fff;
 }
 
 /* ── アップロードボックス ── */

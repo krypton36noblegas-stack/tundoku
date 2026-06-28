@@ -170,18 +170,18 @@ function App() {
         {page === 'scan' && (
           <section className="panel">
             <div className="scan-options">
-              <label htmlFor="requested-count">おおよその冊数</label>
-              <input
-                id="requested-count"
-                className="count-input"
-                type="number"
-                min="1"
-                max="20"
-                value={requestedCount}
-                onChange={(event) => setRequestedCount(event.target.value)}
-                placeholder="10"
-              />
-              <small>この数に近い候補を表示します（1〜20）</small>
+              <label>おおよその冊数</label>
+              <div className="count-btns">
+                {['5', '10', '15', '20'].map((n) => (
+                  <button
+                    key={n}
+                    className={`count-btn${requestedCount === n ? ' active' : ''}`}
+                    onClick={() => setRequestedCount(n)}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <label className="upload-box">
