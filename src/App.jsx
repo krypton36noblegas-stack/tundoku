@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import bookshelfImg from './assets/bookshelf.png';
 import bookImg from './assets/book.png';
 import { normalizeRequestedCount } from '../scanConfig.js';
@@ -16,6 +16,8 @@ function App() {
   const [page, setPage] = useState('scan');
   const [openMemoId, setOpenMemoId] = useState(null);
   const [expandedTitleId, setExpandedTitleId] = useState(null);
+  const [swipedId, setSwipedId] = useState(null);
+  const touchStartX = useRef(0);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_KEY);
@@ -31,6 +33,10 @@ function App() {
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
   }, [library]);
+
+  useEffect(() => {
+    setSwipedId(null);
+  }, [page]);
 
   const summary = useMemo(() => {
     const counts = library.reduce((acc, item) => {
@@ -125,9 +131,22 @@ function App() {
     );
   };
 
-  const removeBook = (id, title) => {
-    if (!window.confirm(`「${title}」を削除しますか？`)) return;
+  const deleteBook = (id) => {
     setLibrary((current) => current.filter((item) => item.id !== id));
+    setSwipedId(null);
+  };
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e, id) => {
+    const delta = touchStartX.current - e.changedTouches[0].clientX;
+    if (delta > 60) {
+      setSwipedId(id);
+    } else if (delta < -20 || Math.abs(delta) < 10) {
+      setSwipedId(null);
+    }
   };
 
   const tundokuBooks = library
@@ -139,6 +158,35 @@ function App() {
     });
 
   const readBooks = library.filter((b) => b.status === '読了');
+
+  const BookCard = ({ book, extraClass = '', actions }) => (
+    <div className="card-wrapper">
+      <div className="delete-zone" onClick={() => deleteBook(book.id)}>削除</div>
+      <article
+        className={`library-card${extraClass}${swipedId === book.id ? ' swiped' : ''}`}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={(e) => handleTouchEnd(e, book.id)}
+      >
+        <div className="library-info">
+          <h3
+            className={`book-title${expandedTitleId === book.id ? ' expanded' : ''}`}
+            onClick={() => setExpandedTitleId(expandedTitleId === book.id ? null : book.id)}
+          >{book.title}</h3>
+          <p className={expandedTitleId === book.id ? 'author-expanded' : ''}>{book.author || '著者情報なし'}</p>
+        </div>
+        <div className="library-actions">{actions}</div>
+        {openMemoId === book.id && (
+          <textarea
+            className="memo-area"
+            value={book.memo || ''}
+            onChange={(e) => updateMemo(book.id, e.target.value)}
+            placeholder="メモを入力..."
+            autoFocus
+          />
+        )}
+      </article>
+    </div>
+  );
 
   return (
     <div className="app-shell">
@@ -246,44 +294,22 @@ function App() {
             ) : null}
             <div className="library-list">
               {tundokuBooks.map((book) => (
-                <article
-                  className={`library-card${book.status === '読書中' ? ' reading' : ''}`}
+                <BookCard
                   key={book.id}
-                >
-                  <div className="library-info">
-                    <h3
-                      className={`book-title${expandedTitleId === book.id ? ' expanded' : ''}`}
-                      onClick={() => setExpandedTitleId(expandedTitleId === book.id ? null : book.id)}
-                    >{book.title}</h3>
-                    <p>{book.author || '著者情報なし'}</p>
-                  </div>
-                  <div className="library-actions">
+                  book={book}
+                  extraClass={book.status === '読書中' ? ' reading' : ''}
+                  actions={<>
                     <button className="read-btn" onClick={() => markAsRead(book.id)}>よんだ</button>
-                    <button className="ghost" onClick={() => removeBook(book.id, book.title)}>削除</button>
                     <button
                       className={`memo-btn${book.memo ? ' has-memo' : ''}`}
                       onClick={() => setOpenMemoId(openMemoId === book.id ? null : book.id)}
-                    >
-                      ✏️
-                    </button>
+                    >✏️</button>
                     <button
                       className={`star-btn${book.status === '読書中' ? ' active' : ''}`}
                       onClick={() => toggleReading(book.id)}
-                      title="いま読んでる"
-                    >
-                      ★
-                    </button>
-                  </div>
-                  {openMemoId === book.id && (
-                    <textarea
-                      className="memo-area"
-                      value={book.memo || ''}
-                      onChange={(e) => updateMemo(book.id, e.target.value)}
-                      placeholder="メモを入力..."
-                      autoFocus
-                    />
-                  )}
-                </article>
+                    >★</button>
+                  </>}
+                />
               ))}
             </div>
           </section>
@@ -296,34 +322,18 @@ function App() {
             ) : null}
             <div className="library-list">
               {readBooks.map((book) => (
-                <article className="library-card read" key={book.id}>
-                  <div className="library-info">
-                    <h3
-                      className={`book-title${expandedTitleId === book.id ? ' expanded' : ''}`}
-                      onClick={() => setExpandedTitleId(expandedTitleId === book.id ? null : book.id)}
-                    >{book.title}</h3>
-                    <p>{book.author || '著者情報なし'}</p>
-                  </div>
-                  <div className="library-actions">
+                <BookCard
+                  key={book.id}
+                  book={book}
+                  extraClass=" read"
+                  actions={<>
                     <button className="back-btn" onClick={() => moveToTundoku(book.id)}>もどす</button>
-                    <button className="ghost" onClick={() => removeBook(book.id, book.title)}>削除</button>
                     <button
                       className={`memo-btn${book.memo ? ' has-memo' : ''}`}
                       onClick={() => setOpenMemoId(openMemoId === book.id ? null : book.id)}
-                    >
-                      ✏️
-                    </button>
-                  </div>
-                  {openMemoId === book.id && (
-                    <textarea
-                      className="memo-area"
-                      value={book.memo || ''}
-                      onChange={(e) => updateMemo(book.id, e.target.value)}
-                      placeholder="メモを入力..."
-                      autoFocus
-                    />
-                  )}
-                </article>
+                    >✏️</button>
+                  </>}
+                />
               ))}
             </div>
           </section>

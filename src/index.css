@@ -255,6 +255,29 @@ h1, h2, h3, p { margin-top: 0; }
   margin-top: 12px;
 }
 
+.card-wrapper {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.delete-zone {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 72px;
+  background: #ef4444;
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
 .result-card,
 .library-card {
   border-radius: 14px;
@@ -264,6 +287,14 @@ h1, h2, h3, p { margin-top: 0; }
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
+  position: relative;
+  z-index: 1;
+  transform: translateX(0);
+  transition: transform 0.25s ease;
+}
+
+.library-card.swiped {
+  transform: translateX(-72px);
 }
 
 .library-info {
@@ -288,10 +319,21 @@ h1, h2, h3, p { margin-top: 0; }
 .book-title.expanded {
   white-space: normal;
   overflow: visible;
-  background: #fff3f8;
-  border-radius: 6px;
-  padding: 2px 4px;
-  margin: -2px -4px;
+}
+
+.library-card:has(.book-title.expanded) .library-info {
+  flex-basis: 100%;
+  overflow: visible;
+}
+
+.library-card:has(.book-title.expanded) .library-actions {
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.author-expanded {
+  white-space: normal !important;
+  overflow: visible !important;
 }
 
 .library-info p {
