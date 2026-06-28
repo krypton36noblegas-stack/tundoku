@@ -323,21 +323,41 @@ h1, h2, h3, p { margin-top: 0; }
   align-items: center;
 }
 
-.library-actions select {
-  flex: 1;
-  padding: 9px 14px;
-  border: 2px solid #c8c0b4;
-  border-radius: 999px;
-  background: #fef9c3;
-  color: #3d3d3d;
-  font-weight: bold;
-  appearance: none;
-  cursor: pointer;
+.library-card.reading {
+  background: #fff8e1;
+  border-left: 4px solid #f5c518;
 }
 
-.library-actions select:focus {
-  outline: none;
-  border-color: #a0a0cc;
+.library-card.read {
+  opacity: 0.65;
+}
+
+.star-btn {
+  flex: 0 0 auto;
+  font-size: 1.4rem;
+  background: none;
+  border: none !important;
+  color: #ccc;
+  cursor: pointer;
+  padding: 0.1rem 0.3rem;
+  transition: color 0.2s, transform 0.15s;
+}
+.star-btn.active {
+  color: #f5c518;
+  transform: scale(1.2);
+}
+
+.read-btn {
+  flex: 0 0 auto;
+  background: #d1fae5;
+  color: #3d3d3d;
+  border-color: #c8c0b4;
+}
+
+.scanned-label {
+  font-weight: bold;
+  color: #e75480;
+  margin: 8px 0 4px;
 }
 
 .library-actions .ghost {

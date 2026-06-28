@@ -9,7 +9,7 @@ function App() {
   const [image, setImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [isScanning, setIsScanning] = useState(false);
-  const [results, setResults] = useState([]);
+  const [scannedBooks, setScannedBooks] = useState([]);
   const [library, setLibrary] = useState([]);
   const [error, setError] = useState('');
   const [requestedCount, setRequestedCount] = useState('10');
@@ -44,14 +44,14 @@ function App() {
     const file = event.target.files?.[0];
     if (!file) return;
     setImage(file);
-    setResults([]);
+    setScannedBooks([]);
     setError('');
     setPreviewUrl(URL.createObjectURL(file));
   };
 
   const handleScan = async () => {
     if (!image) return;
-    setResults([]);
+    setScannedBooks([]);
     setError('');
     setIsScanning(true);
 
@@ -68,15 +68,22 @@ function App() {
         catch { data = { error: 'サーバーから無効な応答を受け取りました。' }; }
       }
       if (!response.ok) throw new Error(data.error || `スキャンに失敗しました (${response.status})`);
+
       const libraryTitles = new Set(library.map((item) => item.title));
-      setResults(
-        (data.results || [])
-          .filter((result) => !libraryTitles.has(result.title))
-          .map((result, index) => ({
-            ...result,
-            id: getResultId(result) || `${result.title || 'book'}-${index}`,
-          }))
-      );
+      const newBooks = (data.results || [])
+        .filter((result) => !libraryTitles.has(result.title))
+        .map((result, index) => ({
+          id: getResultId(result) || `${result.title || 'book'}-${index}`,
+          title: result.title,
+          author: result.author,
+          thumbnail: result.thumbnail,
+          status: '積読',
+          source: result.source,
+          createdAt: new Date().toISOString(),
+        }));
+
+      setScannedBooks(newBooks);
+      setLibrary((current) => [...newBooks, ...current]);
     } catch (scanError) {
       setError(scanError instanceof Error ? scanError.message : 'スキャンに失敗しました');
     } finally {
@@ -84,35 +91,36 @@ function App() {
     }
   };
 
-  const addToLibrary = (result) => {
-    const entry = {
-      id: `${result.googleBookId || result.title}-${Date.now()}`,
-      title: result.title,
-      author: result.author,
-      thumbnail: result.thumbnail,
-      status: '積読',
-      source: result.source,
-      createdAt: new Date().toISOString(),
-    };
-    setLibrary((current) => {
-      const alreadyExists = current.some((item) => item.title === entry.title && item.author === entry.author);
-      return alreadyExists ? current : [entry, ...current];
-    });
-    setResults((current) => current.filter((item) => getResultId(item) !== getResultId(result)));
+  const toggleReading = (id) => {
+    setLibrary((current) =>
+      current.map((item) =>
+        item.id === id
+          ? { ...item, status: item.status === '読書中' ? '積読' : '読書中' }
+          : item
+      )
+    );
   };
 
-  const skipResult = (result) => {
-    setResults((current) => current.filter((item) => getResultId(item) !== getResultId(result)));
-  };
-
-  const changeStatus = (id, status) => {
-    setLibrary((current) => current.map((item) => (item.id === id ? { ...item, status } : item)));
+  const markAsRead = (id) => {
+    setLibrary((current) =>
+      current.map((item) => (item.id === id ? { ...item, status: '読了' } : item))
+    );
   };
 
   const removeBook = (id, title) => {
     if (!window.confirm(`「${title}」を削除しますか？`)) return;
     setLibrary((current) => current.filter((item) => item.id !== id));
   };
+
+  const tundokuBooks = library
+    .filter((b) => b.status === '積読' || b.status === '読書中')
+    .sort((a, b) => {
+      if (a.status === '読書中' && b.status !== '読書中') return -1;
+      if (a.status !== '読書中' && b.status === '読書中') return 1;
+      return 0;
+    });
+
+  const readBooks = library.filter((b) => b.status === '読了');
 
   return (
     <div className="app-shell">
@@ -131,15 +139,15 @@ function App() {
           </div>
           <div className="hero-stat-card">
             <div className="hero-stat-content">
-              <strong>{summary.count?.['積読'] || 0}</strong>
-              <span>積読中</span>
+              <strong>{(summary.count?.['積読'] || 0) + (summary.count?.['読書中'] || 0)}</strong>
+              <span>つんどく</span>
             </div>
             <img className="hero-stat-image" src={bookImg} alt="" />
           </div>
           <div className="hero-stat-card">
             <div className="hero-stat-content">
               <strong>{summary.count?.['読了'] || 0}</strong>
-              <span>読了</span>
+              <span>よんだほん</span>
             </div>
             <img className="hero-stat-image" src={bookImg} alt="" />
           </div>
@@ -148,10 +156,13 @@ function App() {
 
       <nav className="tab-nav">
         <button className={page === 'scan' ? 'tab-btn active' : 'tab-btn'} onClick={() => setPage('scan')}>
-          スキャン
+          よみとる
         </button>
-        <button className={page === 'library' ? 'tab-btn active' : 'tab-btn'} onClick={() => setPage('library')}>
-          ライブラリ
+        <button className={page === 'tundoku' ? 'tab-btn active' : 'tab-btn'} onClick={() => setPage('tundoku')}>
+          つんどく
+        </button>
+        <button className={page === 'read' ? 'tab-btn active' : 'tab-btn'} onClick={() => setPage('read')}>
+          よんだほん
         </button>
       </nav>
 
@@ -185,20 +196,63 @@ function App() {
             {isScanning ? <p className="status">かいせきちゅう…</p> : null}
             {error ? <p className="error">{error}</p> : null}
 
-            <div className="results-list">
-              {results.map((result) => (
-                <article className="result-card" key={getResultId(result)}>
-                  <div className="result-main">
-                    {result.thumbnail ? <img src={result.thumbnail} alt={result.title} /> : <div className="thumb-placeholder">No image</div>}
+            {scannedBooks.length > 0 && (
+              <div>
+                <p className="scanned-label">{scannedBooks.length}冊をつんどくに追加しました</p>
+                <div className="results-list">
+                  {scannedBooks.map((book) => (
+                    <article className="result-card" key={book.id}>
+                      <div className="result-main">
+                        {book.thumbnail ? (
+                          <img src={book.thumbnail} alt={book.title} />
+                        ) : (
+                          <div className="thumb-placeholder">No image</div>
+                        )}
+                        <div>
+                          <h3>{book.title}</h3>
+                          <p>{book.author || '著者情報なし'}</p>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {page === 'tundoku' && (
+          <section className="panel">
+            {tundokuBooks.length === 0 ? (
+              <p className="empty">つんどくはありません。写真から本を追加してください。</p>
+            ) : null}
+            <div className="library-list">
+              {tundokuBooks.map((book) => (
+                <article
+                  className={`library-card${book.status === '読書中' ? ' reading' : ''}`}
+                  key={book.id}
+                >
+                  <div className="library-main">
+                    {book.thumbnail ? (
+                      <img src={book.thumbnail} alt={book.title} />
+                    ) : (
+                      <div className="thumb-placeholder">Book</div>
+                    )}
                     <div>
-                      <h3>{result.title}</h3>
-                      <p>{result.author || '著者情報なし'}</p>
-                      <small>AI が認識</small>
+                      <h3>{book.title}</h3>
+                      <p>{book.author || '著者情報なし'}</p>
                     </div>
                   </div>
-                  <div className="result-actions">
-                    <button onClick={() => addToLibrary(result)}>ついか</button>
-                    <button className="secondary" onClick={() => skipResult(result)}>ここにはない</button>
+                  <div className="library-actions">
+                    <button
+                      className={`star-btn${book.status === '読書中' ? ' active' : ''}`}
+                      onClick={() => toggleReading(book.id)}
+                      title="いま読んでる"
+                    >
+                      ★
+                    </button>
+                    <button className="read-btn" onClick={() => markAsRead(book.id)}>よんだ</button>
+                    <button className="ghost" onClick={() => removeBook(book.id, book.title)}>削除</button>
                   </div>
                 </article>
               ))}
@@ -206,25 +260,26 @@ function App() {
           </section>
         )}
 
-        {page === 'library' && (
+        {page === 'read' && (
           <section className="panel">
-            {library.length === 0 ? <p className="empty">まだ登録されていません。写真から本を追加してください。</p> : null}
+            {readBooks.length === 0 ? (
+              <p className="empty">まだよんだほんはありません。</p>
+            ) : null}
             <div className="library-list">
-              {library.map((book) => (
-                <article className="library-card" key={book.id}>
+              {readBooks.map((book) => (
+                <article className="library-card read" key={book.id}>
                   <div className="library-main">
-                    {book.thumbnail ? <img src={book.thumbnail} alt={book.title} /> : <div className="thumb-placeholder">Book</div>}
+                    {book.thumbnail ? (
+                      <img src={book.thumbnail} alt={book.title} />
+                    ) : (
+                      <div className="thumb-placeholder">Book</div>
+                    )}
                     <div>
                       <h3>{book.title}</h3>
                       <p>{book.author || '著者情報なし'}</p>
                     </div>
                   </div>
                   <div className="library-actions">
-                    <select value={book.status} onChange={(event) => changeStatus(book.id, event.target.value)}>
-                      <option value="積読">つんどく</option>
-                      <option value="読書中">よんでる</option>
-                      <option value="読了">よんだやつ</option>
-                    </select>
                     <button className="ghost" onClick={() => removeBook(book.id, book.title)}>削除</button>
                   </div>
                 </article>
