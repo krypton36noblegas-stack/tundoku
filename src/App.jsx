@@ -1,9 +1,43 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import bookshelfImg from './assets/bookshelf.png';
 import bookImg from './assets/book.png';
 import { normalizeRequestedCount } from '../scanConfig.js';
 
 const STORAGE_KEY = 'tundoku-library';
+
+function BookCard({ book, extraClass = '', actions, memoButton = null, swipedId, expandedTitleId, openMemoId, onDelete, onTouchStart, onTouchEnd, onToggleTitle, onUpdateMemo }) {
+  return (
+    <div className="card-wrapper">
+      <div className="delete-zone" onClick={() => onDelete(book.id)}>削除</div>
+      <article
+        className={`library-card${extraClass}${swipedId === book.id ? ' swiped' : ''}`}
+        onTouchStart={onTouchStart}
+        onTouchEnd={(e) => onTouchEnd(e, book.id)}
+      >
+        <div className="library-info">
+          <div className="title-row">
+            <h3
+              className={`book-title${expandedTitleId === book.id ? ' expanded' : ''}`}
+              onClick={() => onToggleTitle(book.id)}
+            >{book.title}</h3>
+            {expandedTitleId === book.id && memoButton}
+          </div>
+          <p className={expandedTitleId === book.id ? 'author-expanded' : ''}>{book.author || '著者情報なし'}</p>
+        </div>
+        <div className="library-actions">{actions}</div>
+        {openMemoId === book.id && (
+          <textarea
+            className="memo-area"
+            value={book.memo || ''}
+            onChange={(e) => onUpdateMemo(book.id, e.target.value)}
+            placeholder="メモを入力..."
+            autoFocus
+          />
+        )}
+      </article>
+    </div>
+  );
+}
 
 function App() {
   const [image, setImage] = useState(null);
@@ -103,7 +137,7 @@ function App() {
     }
   };
 
-  const toggleReading = (id) => {
+  const toggleReading = useCallback((id) => {
     setLibrary((current) =>
       current.map((item) =>
         item.id === id
@@ -111,43 +145,51 @@ function App() {
           : item
       )
     );
-  };
+  }, []);
 
-  const markAsRead = (id) => {
+  const markAsRead = useCallback((id) => {
     setLibrary((current) =>
       current.map((item) => (item.id === id ? { ...item, status: '読了' } : item))
     );
-  };
+  }, []);
 
-  const updateMemo = (id, memo) => {
+  const updateMemo = useCallback((id, memo) => {
     setLibrary((current) =>
       current.map((item) => (item.id === id ? { ...item, memo } : item))
     );
-  };
+  }, []);
 
-  const moveToTundoku = (id) => {
+  const moveToTundoku = useCallback((id) => {
     setLibrary((current) =>
       current.map((item) => (item.id === id ? { ...item, status: '積読' } : item))
     );
-  };
+  }, []);
 
-  const deleteBook = (id) => {
+  const deleteBook = useCallback((id) => {
     setLibrary((current) => current.filter((item) => item.id !== id));
     setSwipedId(null);
-  };
+  }, []);
 
-  const handleTouchStart = (e) => {
+  const handleTouchStart = useCallback((e) => {
     touchStartX.current = e.touches[0].clientX;
-  };
+  }, []);
 
-  const handleTouchEnd = (e, id) => {
+  const handleTouchEnd = useCallback((e, id) => {
     const delta = touchStartX.current - e.changedTouches[0].clientX;
     if (delta > 60) {
       setSwipedId(id);
     } else if (delta < -20 || Math.abs(delta) < 10) {
       setSwipedId(null);
     }
-  };
+  }, []);
+
+  const handleToggleTitle = useCallback((id) => {
+    setExpandedTitleId((prev) => (prev === id ? null : id));
+  }, []);
+
+  const handleToggleMemo = useCallback((id) => {
+    setOpenMemoId((prev) => (prev === id ? null : id));
+  }, []);
 
   const tundokuBooks = library
     .filter((b) => b.status === '積読' || b.status === '読書中')
@@ -158,38 +200,6 @@ function App() {
     });
 
   const readBooks = library.filter((b) => b.status === '読了');
-
-  const BookCard = ({ book, extraClass = '', actions, memoButton = null }) => (
-    <div className="card-wrapper">
-      <div className="delete-zone" onClick={() => deleteBook(book.id)}>削除</div>
-      <article
-        className={`library-card${extraClass}${swipedId === book.id ? ' swiped' : ''}`}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={(e) => handleTouchEnd(e, book.id)}
-      >
-        <div className="library-info">
-          <div className="title-row">
-            <h3
-              className={`book-title${expandedTitleId === book.id ? ' expanded' : ''}`}
-              onClick={() => setExpandedTitleId(expandedTitleId === book.id ? null : book.id)}
-            >{book.title}</h3>
-            {expandedTitleId === book.id && memoButton}
-          </div>
-          <p className={expandedTitleId === book.id ? 'author-expanded' : ''}>{book.author || '著者情報なし'}</p>
-        </div>
-        <div className="library-actions">{actions}</div>
-        {openMemoId === book.id && (
-          <textarea
-            className="memo-area"
-            value={book.memo || ''}
-            onChange={(e) => updateMemo(book.id, e.target.value)}
-            placeholder="メモを入力..."
-            autoFocus
-          />
-        )}
-      </article>
-    </div>
-  );
 
   return (
     <div className="app-shell">
@@ -301,10 +311,18 @@ function App() {
                   key={book.id}
                   book={book}
                   extraClass={book.status === '読書中' ? ' reading' : ''}
+                  swipedId={swipedId}
+                  expandedTitleId={expandedTitleId}
+                  openMemoId={openMemoId}
+                  onDelete={deleteBook}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                  onToggleTitle={handleToggleTitle}
+                  onUpdateMemo={updateMemo}
                   memoButton={
                     <button
                       className={`memo-btn${book.memo ? ' has-memo' : ''}`}
-                      onClick={() => setOpenMemoId(openMemoId === book.id ? null : book.id)}
+                      onClick={() => handleToggleMemo(book.id)}
                     >✏️</button>
                   }
                   actions={<>
@@ -331,11 +349,19 @@ function App() {
                   key={book.id}
                   book={book}
                   extraClass=" read"
+                  swipedId={swipedId}
+                  expandedTitleId={expandedTitleId}
+                  openMemoId={openMemoId}
+                  onDelete={deleteBook}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                  onToggleTitle={handleToggleTitle}
+                  onUpdateMemo={updateMemo}
                   actions={<>
                     <button className="back-btn" onClick={() => moveToTundoku(book.id)}>もどす</button>
                     <button
                       className={`memo-btn${book.memo ? ' has-memo' : ''}`}
-                      onClick={() => setOpenMemoId(openMemoId === book.id ? null : book.id)}
+                      onClick={() => handleToggleMemo(book.id)}
                     >✏️</button>
                   </>}
                 />
