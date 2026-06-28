@@ -247,41 +247,63 @@ h1, h2, h3, p { margin-top: 0; }
 
 .result-card,
 .library-card {
-  border-radius: 18px;
-  padding: 14px;
+  border-radius: 14px;
+  padding: 10px 14px;
   background: #fffdf8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.result-main,
-.library-main {
+.library-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.library-info h3 {
+  font-size: 0.95rem;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.library-info p {
+  font-size: 0.8rem;
+  color: #777;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-main {
   display: flex;
   gap: 12px;
   align-items: center;
-  margin-bottom: 10px;
+  flex: 1;
 }
 
-.result-main img,
-.library-main img {
-  width: 52px;
-  height: 72px;
+.result-main img {
+  width: 44px;
+  height: 60px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .thumb-placeholder {
-  width: 52px;
-  height: 72px;
+  width: 44px;
+  height: 60px;
   display: grid;
   place-items: center;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #fef9c3;
   color: #aaa;
   font-size: 0.7rem;
   text-align: center;
 }
 
-.result-main h3, .library-main h3 { font-size: 1rem; margin-bottom: 4px; }
-.result-main p, .library-main p { font-size: 0.85rem; color: #777; margin-bottom: 4px; }
+.result-main h3 { font-size: 0.95rem; margin-bottom: 3px; }
+.result-main p { font-size: 0.82rem; color: #777; margin-bottom: 3px; }
 .result-main small { font-size: 0.75rem; color: #bbb; }
 
 /* ── ボタン ── */
@@ -294,12 +316,13 @@ h1, h2, h3, p { margin-top: 0; }
 
 .result-actions button,
 .library-actions button {
-  padding: 9px 16px;
+  padding: 6px 12px;
   border: 2px solid #c8c0b4;
   border-radius: 999px;
   font-weight: bold;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   transition: filter 0.15s;
+  white-space: nowrap;
 }
 
 .result-actions button:hover,
@@ -319,8 +342,9 @@ h1, h2, h3, p { margin-top: 0; }
 
 .library-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .library-card.reading {

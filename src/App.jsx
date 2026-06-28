@@ -232,18 +232,13 @@ function App() {
                   className={`library-card${book.status === '読書中' ? ' reading' : ''}`}
                   key={book.id}
                 >
-                  <div className="library-main">
-                    {book.thumbnail ? (
-                      <img src={book.thumbnail} alt={book.title} />
-                    ) : (
-                      <div className="thumb-placeholder">Book</div>
-                    )}
-                    <div>
-                      <h3>{book.title}</h3>
-                      <p>{book.author || '著者情報なし'}</p>
-                    </div>
+                  <div className="library-info">
+                    <h3>{book.title}</h3>
+                    <p>{book.author || '著者情報なし'}</p>
                   </div>
                   <div className="library-actions">
+                    <button className="read-btn" onClick={() => markAsRead(book.id)}>よんだ</button>
+                    <button className="ghost" onClick={() => removeBook(book.id, book.title)}>削除</button>
                     <button
                       className={`star-btn${book.status === '読書中' ? ' active' : ''}`}
                       onClick={() => toggleReading(book.id)}
@@ -251,8 +246,6 @@ function App() {
                     >
                       ★
                     </button>
-                    <button className="read-btn" onClick={() => markAsRead(book.id)}>よんだ</button>
-                    <button className="ghost" onClick={() => removeBook(book.id, book.title)}>削除</button>
                   </div>
                 </article>
               ))}
@@ -268,16 +261,9 @@ function App() {
             <div className="library-list">
               {readBooks.map((book) => (
                 <article className="library-card read" key={book.id}>
-                  <div className="library-main">
-                    {book.thumbnail ? (
-                      <img src={book.thumbnail} alt={book.title} />
-                    ) : (
-                      <div className="thumb-placeholder">Book</div>
-                    )}
-                    <div>
-                      <h3>{book.title}</h3>
-                      <p>{book.author || '著者情報なし'}</p>
-                    </div>
+                  <div className="library-info">
+                    <h3>{book.title}</h3>
+                    <p>{book.author || '著者情報なし'}</p>
                   </div>
                   <div className="library-actions">
                     <button className="ghost" onClick={() => removeBook(book.id, book.title)}>削除</button>
