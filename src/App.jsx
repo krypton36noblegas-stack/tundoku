@@ -69,9 +69,13 @@ function App() {
       }
       if (!response.ok) throw new Error(data.error || `スキャンに失敗しました (${response.status})`);
 
-      const libraryTitles = new Set(library.map((item) => item.title));
+      const seenTitles = new Set(library.map((item) => item.title));
       const newBooks = (data.results || [])
-        .filter((result) => !libraryTitles.has(result.title))
+        .filter((result) => {
+          if (seenTitles.has(result.title)) return false;
+          seenTitles.add(result.title);
+          return true;
+        })
         .map((result, index) => ({
           id: getResultId(result) || `${result.title || 'book'}-${index}`,
           title: result.title,
